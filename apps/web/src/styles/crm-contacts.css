@@ -1,0 +1,330 @@
+/* CRM Contacts Page Styles */
+
+.contacts-page,
+.companies-page,
+.activities-page {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.page-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Contacts Table */
+.contacts-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.table-search {
+  display: flex;
+}
+
+.table-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.table-controls .search-input {
+  flex: 1;
+  min-width: 250px;
+}
+
+.table-controls .filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table thead {
+  border-bottom: 2px solid #E5E7EB;
+  background-color: #F9FAFB;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.data-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.table-row:hover {
+  background-color: #F9FAFB;
+}
+
+.contact-name,
+.company-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+.contact-email,
+.company-email {
+  color: #3B82F6;
+  font-size: 0.8rem;
+}
+
+.badge {
+  display: inline-block;
+  background-color: #DBEAFE;
+  color: #0C2D6B;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  color: #9CA3AF;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #E5E7EB;
+}
+
+.action-btn.edit:hover {
+  background-color: #DBEAFE;
+}
+
+.action-btn.delete:hover {
+  background-color: #FEE2E2;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #9CA3AF;
+  font-style: italic;
+}
+
+.results-info {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  margin-top: 1rem;
+}
+
+/* Activities List Styles */
+.activities-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.activities-filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-select:hover {
+  border-color: #3B82F6;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.activity-item {
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  transition: all 0.2s;
+}
+
+.activity-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #3B82F6;
+}
+
+.activity-item.completed {
+  opacity: 0.6;
+  background-color: #F9FAFB;
+}
+
+.activity-checkbox {
+  display: flex;
+  align-items: center;
+  padding-top: 0.25rem;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.activity-icon {
+  font-size: 1.5rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.activity-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.activity-subject {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  text-decoration: none;
+}
+
+.activity-item.completed .activity-subject {
+  text-decoration: line-through;
+}
+
+.activity-description {
+  font-size: 0.8rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+.activity-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+.meta-owner {
+  font-weight: 600;
+  color: #6B7280;
+}
+
+.activity-actions {
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.activity-item:hover .activity-actions {
+  opacity: 1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #9CA3AF;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .activities-filters,
+  .table-controls {
+    flex-direction: column;
+  }
+
+  .table-controls .search-input {
+    min-width: auto;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .contacts-page,
+  .companies-page,
+  .activities-page {
+    padding: 1rem;
+  }
+
+  .data-table {
+    font-size: 0.75rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem;
+  }
+
+  .contact-email,
+  .company-email {
+    display: none;
+  }
+
+  .activity-item {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .activity-icon {
+    font-size: 1.25rem;
+  }
+
+  .activity-actions {
+    opacity: 1;
+  }
+}
