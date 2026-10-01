@@ -1,8 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import { createApp } from './app.js';
 import { config } from './config/env.js';
+import { prisma } from './lib/prisma.js';
 
-const prisma = new PrismaClient();
 const app = createApp();
 
 let server: any;

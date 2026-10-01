@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 interface ApiError extends Error {
   statusCode?: number;
+  details?: unknown;
   message: string;
 }
 
@@ -23,6 +24,7 @@ export const errorHandler = (
       message,
       statusCode,
       ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+      ...(err.details ? { details: err.details } : {}),
     },
   });
 };

@@ -1,9 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding database with demo data...\n');
+  const demoPassword = await bcrypt.hash('password', 12);
 
   // Clear existing data
   await prisma.payment.deleteMany();
@@ -56,7 +58,7 @@ async function main() {
     data: {
       email: 'admin@techvision.com',
       name: 'Rajesh Kumar',
-      password: 'hashed_password_here',
+      password: demoPassword,
       role: 'ADMIN',
       organizationId: org.id,
     },
@@ -66,7 +68,7 @@ async function main() {
     data: {
       email: 'sales@techvision.com',
       name: 'Priya Singh',
-      password: 'hashed_password_here',
+      password: demoPassword,
       role: 'SALES',
       organizationId: org.id,
     },
@@ -76,7 +78,7 @@ async function main() {
     data: {
       email: 'inventory@techvision.com',
       name: 'Vikram Patel',
-      password: 'hashed_password_here',
+      password: demoPassword,
       role: 'INVENTORY',
       organizationId: org.id,
     },

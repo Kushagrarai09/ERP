@@ -1,9 +1,15 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { config } from '../config/env.js';
+import { prisma } from '../lib/prisma.js';
+import { requireAuth } from '../middleware/auth.js';
+import authRouter from './auth.js';
+import crmRouter from './crm.js';
+import salesRouter from './sales.js';
+import inventoryRouter from './inventory.js';
+import procurementRouter from './procurement.js';
+import financeRouter from './finance.js';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Health check - Basic API status
 router.get('/health', (_req: Request, res: Response) => {
@@ -37,5 +43,13 @@ router.get('/health/db', async (_req: Request, res: Response) => {
     });
   }
 });
+
+router.use('/auth', authRouter);
+router.use(requireAuth);
+router.use('/', crmRouter);
+router.use('/', salesRouter);
+router.use('/', inventoryRouter);
+router.use('/', procurementRouter);
+router.use('/', financeRouter);
 
 export default router;
