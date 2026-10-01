@@ -32,3 +32,11 @@ export const requireRole = (...roles: UserRole[]) => (req: Request, _res: Respon
   }
   next();
 };
+
+export const requireWriteRole = (...roles: UserRole[]) => (req: Request, _res: Response, next: NextFunction) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  if (!req.user || (!roles.includes(req.user.role) && req.user.role !== UserRole.ADMIN)) {
+    return next(Object.assign(new Error('Insufficient permissions'), { statusCode: 403 }));
+  }
+  next();
+};

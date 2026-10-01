@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { config } from '../config/env.js';
 import { prisma } from '../lib/prisma.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireWriteRole } from '../middleware/auth.js';
 import authRouter from './auth.js';
 import crmRouter from './crm.js';
 import salesRouter from './sales.js';
@@ -46,10 +46,10 @@ router.get('/health/db', async (_req: Request, res: Response) => {
 
 router.use('/auth', authRouter);
 router.use(requireAuth);
-router.use('/', crmRouter);
-router.use('/', salesRouter);
-router.use('/', inventoryRouter);
-router.use('/', procurementRouter);
-router.use('/', financeRouter);
+router.use('/', requireWriteRole('ADMIN', 'MANAGER', 'SALES'), crmRouter);
+router.use('/', requireWriteRole('ADMIN', 'MANAGER', 'SALES'), salesRouter);
+router.use('/', requireWriteRole('ADMIN', 'MANAGER', 'INVENTORY'), inventoryRouter);
+router.use('/', requireWriteRole('ADMIN', 'MANAGER', 'PROCUREMENT'), procurementRouter);
+router.use('/', requireWriteRole('ADMIN', 'MANAGER', 'FINANCE'), financeRouter);
 
 export default router;

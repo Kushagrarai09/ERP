@@ -34,9 +34,10 @@ createdb -U postgres erp_dev
 psql -U postgres -d erp_dev -c "SELECT 1;"
 ```
 
-Update `.env` file if your password or username is different:
+Update `.env` file if your password or username is different. The installed PostgreSQL 18 service in this workspace is configured for port `5000`; the backend therefore runs on port `5001` to avoid a port collision:
 ```env
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/erp_dev"
+DATABASE_URL="postgresql://postgres:your_password@localhost:5000/erp_dev"
+PORT=5001
 ```
 
 ## Step 2: Run Migration and Seed
@@ -71,7 +72,7 @@ Then open browser to http://localhost:5555
 
 ## Troubleshooting
 
-### Port 5432 already in use
+### Port already in use
 ```bash
 # Find and kill the process
 lsof -i :5432 | grep LISTEN | awk '{print $2}' | xargs kill -9
@@ -91,13 +92,13 @@ Press Ctrl+C and retry
 npm run prisma:migrate:reset
 ```
 
-## Database Credentials (from .env)
+## Database Connection (from .env)
 
 ```
 Username: postgres
-Password: password
+Password: your configured PostgreSQL password
 Host: localhost
-Port: 5432
+Port: 5000 (installed service) or 5432 (Docker)
 Database: erp_dev
 ```
 
@@ -107,5 +108,5 @@ Database: erp_dev
 2. Check seed data loaded
 3. Start the backend server: `npm run dev`
 4. Test API endpoints:
-   - http://localhost:5000/api/health
-   - http://localhost:5000/api/health/db
+  - http://localhost:5001/api/health
+  - http://localhost:5001/api/health/db
