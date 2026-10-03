@@ -149,7 +149,7 @@ export const ProcurementDashboard: React.FC = () => {
                     borderLeft: '4px solid #10B981',
                     borderRadius: '6px',
                     display: 'flex',
-                    justify: 'space-between',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                   }}
                 >

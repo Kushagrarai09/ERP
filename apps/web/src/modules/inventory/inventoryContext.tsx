@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   Product,
   Warehouse,
@@ -7,13 +7,8 @@ import {
   StockMovementType,
   StockAvailabilityCheck,
 } from '../../types/inventory';
-import {
-  MOCK_PRODUCTS,
-  MOCK_WAREHOUSES,
-  MOCK_WAREHOUSE_STOCKS,
-  MOCK_MOVEMENTS,
-} from '../../mock-data/inventory';
 import { SalesItem } from '../../types/sales';
+import { api } from '../../lib/api';
 
 interface InventoryContextType {
   products: Product[];
@@ -34,15 +29,38 @@ interface InventoryContextType {
   recordMovement: (movement: Omit<StockMovement, 'id' | 'date'>) => StockMovement;
   checkStockAvailability: (items: SalesItem[]) => StockAvailabilityCheck[];
   reserveAndFulfillOrder: (orderCode: string, items: SalesItem[], warehouseId?: string) => boolean;
+  loading: boolean;
+  error: string | null;
+  reload: () => Promise<void>;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
 export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [warehouses] = useState<Warehouse[]>(MOCK_WAREHOUSES);
-  const [stocks, setStocks] = useState<WarehouseStock[]>(MOCK_WAREHOUSE_STOCKS);
-  const [movements, setMovements] = useState<StockMovement[]>(MOCK_MOVEMENTS);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [stocks, setStocks] = useState<WarehouseStock[]>([]);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const [productData, warehouseData, stockData, movementData] = await Promise.all([
+        api.get<any[]>('/products'), api.get<any[]>('/warehouses'), api.get<any[]>('/stock'), api.get<any[]>('/stock-movements'),
+      ]);
+      const productMap = new Map(productData.map((item) => [item.id, item]));
+      const warehouseMap = new Map(warehouseData.map((item) => [item.id, item]));
+      setProducts(productData.map((item) => ({ id: item.id, sku: item.code, name: item.name, category: 'General', unit: item.unit, sellingPrice: Number(item.sellingPrice), costPrice: Number(item.cost), stock: stockData.filter((stock) => stock.productId === item.id).reduce((sum, stock) => sum + Number(stock.quantity), 0), reorderLevel: 0, status: item.status === 'ACTIVE' ? 'active' : 'discontinued', createdAt: new Date(item.createdAt) })));
+      setWarehouses(warehouseData.map((item) => ({ id: item.id, code: item.id, name: item.name, location: item.location || '', manager: '', phone: '', email: '' })));
+      setStocks(stockData.map((item) => ({ id: item.id, productId: item.productId, productName: productMap.get(item.productId)?.name || '', sku: productMap.get(item.productId)?.code || '', warehouseId: item.warehouseId, warehouseName: warehouseMap.get(item.warehouseId)?.name || '', available: Number(item.quantity) - Number(item.reservedQuantity), reserved: Number(item.reservedQuantity), total: Number(item.quantity) })));
+      setMovements(movementData.map((item) => ({ id: item.id, date: new Date(item.createdAt), productId: item.productId, productName: productMap.get(item.productId)?.name || '', sku: productMap.get(item.productId)?.code || '', warehouseId: item.warehouseId, warehouseName: warehouseMap.get(item.warehouseId)?.name || '', type: item.type === 'PURCHASE' ? 'Purchase' : item.type === 'SALE' ? 'Sale' : item.type === 'RETURN' ? 'Return' : 'Adjustment', quantity: item.direction === 'OUT' ? -Number(item.quantity) : Number(item.quantity), referenceCode: item.reference })));
+      setError(null);
+    } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to load inventory data'); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { void reload(); }, []);
 
   // --- PRODUCTS ---
   const addProduct = (pData: Omit<Product, 'id' | 'createdAt'>): Product => {
@@ -181,6 +199,9 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         recordMovement,
         checkStockAvailability,
         reserveAndFulfillOrder,
+        loading,
+        error,
+        reload,
       }}
     >
       {children}

@@ -298,7 +298,7 @@ export const MOCK_ACTIVITIES: Activity[] = [
   },
   {
     id: 'act-2',
-    type: 'proposal',
+    type: 'task',
     subject: 'Send Factory Automation Proposal',
     description: 'Drafted custom quote for Globex Industries.',
     relatedTo: 'deal-2',

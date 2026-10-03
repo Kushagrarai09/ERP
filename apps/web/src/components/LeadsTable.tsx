@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lead } from '../../types/crm';
+import { Lead } from '../types/crm';
 
 interface FilterOptions {
   status?: string;

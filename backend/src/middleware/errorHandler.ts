@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { config } from '../config/env.js';
 
 interface ApiError extends Error {
   statusCode?: number;
@@ -8,7 +9,7 @@ interface ApiError extends Error {
 
 export const errorHandler = (
   err: ApiError,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ) => {
@@ -23,8 +24,9 @@ export const errorHandler = (
     error: {
       message,
       statusCode,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+      ...(config.isDevelopment && { stack: err.stack }),
       ...(err.details ? { details: err.details } : {}),
+      requestId: res.getHeader('x-request-id') || req.header('x-request-id'),
     },
   });
 };

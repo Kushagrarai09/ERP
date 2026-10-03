@@ -2,14 +2,15 @@
 
 A clean, modular-monolith backend for the ERP SaaS application built with Node.js, Express, TypeScript, Prisma ORM, and PostgreSQL.
 
-## 🎯 Purpose
+## 🎯 Purpose & Features
 
-This backend serves as the foundation for persisting data and providing APIs for the existing React + TypeScript + Vite ERP frontend. It will eventually support five core modules:
-- CRM
-- Sales
-- Inventory
-- Procurement
-- Finance
+This backend serves as the multi-tenant REST API foundation for the Complete ERP platform, providing data persistence, authentication, role-based authorization, and business logic across core ERP domains:
+- 🏢 **Multi-Tenant SaaS & Auth**: Organizations, JWT authentication, bcrypt passwords, RBAC
+- 👥 **CRM**: Companies, Contacts, Leads, Deals, Activities
+- 📈 **Sales**: Quotations, Sales Orders, Item breakdowns
+- 📦 **Inventory**: Products, Warehouses, Stock levels, Stock movements & transfers
+- 🛒 **Procurement**: Suppliers, Purchase Orders, Goods Receipts (GRN)
+- 💳 **Finance**: Invoices, Payments, Expenses, Accounts & Ledger
 
 ## 🛠️ Technology Stack
 
@@ -86,11 +87,11 @@ backend/
 ### Start PostgreSQL (Local Development)
 
 #### Option A: Using Docker
-```bash
-docker run --name erp-postgres \
-  -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=erp_dev \
-  -p 5432:5432 \
+```powershell
+docker run --name erp-postgres `
+  -e POSTGRES_PASSWORD=password `
+  -e POSTGRES_DB=erp_dev `
+  -p 5432:5432 `
   -d postgres:15
 ```
 
@@ -112,13 +113,13 @@ npm run dev
 Expected output:
 ```
 ✅ Connected to PostgreSQL
-✅ ERP Backend is running on port 5000
+✅ ERP Backend is running on port 5001
 📍 Environment: development
 🌐 Frontend URL: http://localhost:5173
 
 📚 API Documentation:
-   Health Check: http://localhost:5000/api/health
-   Database Check: http://localhost:5000/api/health/db
+  Health Check: http://localhost:5001/api/health
+  Database Check: http://localhost:5001/api/health/db
 ```
 
 ### Production Build
@@ -132,7 +133,7 @@ npm run start
 
 ### Basic Health Check
 ```bash
-GET http://localhost:5000/api/health
+GET http://localhost:5001/api/health
 ```
 
 **Response (200):**
@@ -147,7 +148,7 @@ GET http://localhost:5000/api/health
 
 ### Database Health Check
 ```bash
-GET http://localhost:5000/api/health/db
+GET http://localhost:5001/api/health/db
 ```
 
 **Response (200):**
@@ -187,16 +188,18 @@ Copy `.env.example` to `.env` and update:
 
 ```env
 # Server port
-PORT=5000
+PORT=5001
 
 # Environment (development or production)
 NODE_ENV=development
 
 # PostgreSQL connection string
-DATABASE_URL="postgresql://postgres:password@localhost:5432/erp_dev"
+DATABASE_URL="postgresql://postgres:your_password@localhost:5000/erp_dev"
 
 # Frontend URL for CORS
 FRONTEND_URL="http://localhost:5173"
+JWT_SECRET="replace-with-a-long-random-secret"
+JWT_EXPIRES_IN="8h"
 ```
 
 **PostgreSQL Connection String Format:**

@@ -1,9 +1,9 @@
 import React from 'react';
-import AppShell from '../../layouts/AppShell';
-import Breadcrumb from '../../components/Breadcrumb';
-import PageHeader from '../../components/PageHeader';
-import ActivitiesList from '../../components/ActivitiesList';
-import { Activity } from '../../types/crm';
+import AppShell from '../../../layouts/AppShell';
+import Breadcrumb from '../../../components/Breadcrumb';
+import PageHeader from '../../../components/PageHeader';
+import ActivitiesList from '../../../components/ActivitiesList';
+import { Activity } from '../../../types/crm';
 
 export const ActivitiesPage: React.FC = () => {
   const handleAddActivity = () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Deal } from '../../types/crm';
+import { Deal } from '../types/crm';
 
 interface DealCardProps {
   deal: Deal;

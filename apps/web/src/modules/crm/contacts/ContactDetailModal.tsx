@@ -93,7 +93,7 @@ export const ContactDetailModal: React.FC<ContactDetailModalProps> = ({
                   key={deal.id}
                   style={{
                     display: 'flex',
-                    justify: 'space-between',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '0.625rem 0.875rem',
                     background: '#F1F5F9',

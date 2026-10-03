@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+import { randomUUID } from 'crypto';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config/env.js';
@@ -11,13 +12,28 @@ export const createApp = (): Express => {
   // Security middleware
   app.use(helmet());
 
-  // CORS configuration
+  // Flexible CORS configuration for production deployment
+  const allowedOrigins = (config.frontendUrl || 'http://localhost:5173')
+    .split(',')
+    .map((url) => url.trim());
+
   app.use(
     cors({
-      origin: config.frontendUrl,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+          allowedOrigins.includes('*') ||
+          allowedOrigins.includes(origin) ||
+          origin.endsWith('.vercel.app') ||
+          config.nodeEnv !== 'production'
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true); // Allow origin in case of custom domains
+      },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id'],
     })
   );
 
@@ -26,8 +42,10 @@ export const createApp = (): Express => {
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Logging middleware
-  app.use((req, _res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  app.use((req, res, next) => {
+    const requestId = req.header('x-request-id') || randomUUID();
+    res.setHeader('x-request-id', requestId);
+    console.log(JSON.stringify({ timestamp: new Date().toISOString(), requestId, method: req.method, path: req.path }));
     next();
   });
 

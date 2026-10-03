@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity } from '../../types/crm';
+import { Activity } from '../types/crm';
 
 interface ActivitiesListProps {
   activities?: Activity[];

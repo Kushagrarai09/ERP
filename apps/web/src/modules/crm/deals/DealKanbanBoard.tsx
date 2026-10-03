@@ -51,7 +51,7 @@ export const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({ deals, onSelec
             <div
               style={{
                 display: 'flex',
-                justify: 'space-between',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingBottom: '0.5rem',
                 borderBottom: `3px solid ${col.color}`,
@@ -128,7 +128,7 @@ export const DealKanbanBoard: React.FC<DealKanbanBoardProps> = ({ deals, onSelec
                     <div
                       style={{
                         display: 'flex',
-                        justify: 'space-between',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
                         marginTop: '0.625rem',
                         paddingTop: '0.5rem',

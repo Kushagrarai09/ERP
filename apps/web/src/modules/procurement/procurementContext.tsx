@@ -1,167 +1,35 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Supplier, PurchaseOrder, GoodsReceipt, POStatus, GoodsReceiptItem } from '../../types/procurement';
-import { MOCK_SUPPLIERS, MOCK_PURCHASE_ORDERS, MOCK_GOODS_RECEIPTS } from '../../mock-data/procurement';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { api } from '../../lib/api';
+import { GoodsReceipt, GoodsReceiptItem, POStatus, PurchaseOrder, Supplier } from '../../types/procurement';
 
 interface ProcurementContextType {
-  suppliers: Supplier[];
-  purchaseOrders: PurchaseOrder[];
-  goodsReceipts: GoodsReceipt[];
-
-  // Supplier CRUD
-  addSupplier: (supplier: Omit<Supplier, 'id' | 'createdAt' | 'totalPurchases'>) => Supplier;
-  updateSupplier: (id: string, fields: Partial<Supplier>) => void;
-  deleteSupplier: (id: string) => void;
-
-  // PO CRUD & Actions
-  addPO: (po: Omit<PurchaseOrder, 'id' | 'code' | 'poDate'>) => PurchaseOrder;
-  updatePO: (id: string, fields: Partial<PurchaseOrder>) => void;
-  updatePOStatus: (id: string, status: POStatus) => void;
-  deletePO: (id: string) => void;
-
-  // Receiving Goods Workflow Handler
-  receiveGoods: (
-    po: PurchaseOrder,
-    warehouseId: string,
-    warehouseName: string,
-    receivedItems: GoodsReceiptItem[],
-    recordStockMovement: (movement: any) => void
-  ) => GoodsReceipt;
+  suppliers: Supplier[]; purchaseOrders: PurchaseOrder[]; goodsReceipts: GoodsReceipt[]; loading: boolean; error: string | null; reload: () => Promise<void>;
+  addSupplier: (supplier: Omit<Supplier, 'id' | 'createdAt' | 'totalPurchases'>) => Promise<Supplier | undefined>; updateSupplier: (id: string, fields: Partial<Supplier>) => Promise<void>; deleteSupplier: (id: string) => Promise<void>;
+  addPO: (po: Omit<PurchaseOrder, 'id' | 'code' | 'poDate'>) => Promise<PurchaseOrder | undefined>; updatePO: (id: string, fields: Partial<PurchaseOrder>) => Promise<void>; updatePOStatus: (id: string, status: POStatus) => Promise<void>; deletePO: (id: string) => Promise<void>;
+  receiveGoods: (po: PurchaseOrder, warehouseId: string, warehouseName: string, receivedItems: GoodsReceiptItem[], recordStockMovement: (movement: any) => void) => Promise<GoodsReceipt | undefined>;
 }
-
 const ProcurementContext = createContext<ProcurementContextType | undefined>(undefined);
+const poStatus: Record<string, string> = { draft: 'DRAFT', sent: 'SENT', approved: 'ACCEPTED', received: 'RECEIVED' };
+const fromPOStatus: Record<string, POStatus> = { DRAFT: 'draft', SENT: 'sent', ACCEPTED: 'approved', PARTIALLY_RECEIVED: 'received', RECEIVED: 'received' };
+const fromGRStatus: Record<string, GoodsReceipt['status']> = { DRAFT: 'draft', RECEIVED: 'received', VERIFIED: 'verified' };
+const mapSupplier = (item: any): Supplier => ({ id: item.id, name: item.name, contactPerson: item.contactPerson || '', email: item.email || '', phone: item.phone || '', category: 'General', status: 'active', totalPurchases: 0, createdAt: new Date(item.createdAt) });
+const mapPO = (item: any): PurchaseOrder => ({ id: item.id, code: item.code, supplierName: item.supplier?.name || item.supplierId, supplierId: item.supplierId, items: (item.items || []).map((line: any) => ({ id: line.id, productId: line.productId, productName: line.product?.name || line.productId, quantity: Number(line.quantity), unitCost: Number(line.unitPrice), total: Number(line.lineTotal) })), subtotal: Number(item.subtotal), tax: Number(item.tax), total: Number(item.total), currency: '₹', status: fromPOStatus[item.status] || 'draft', poDate: new Date(item.orderDate || item.createdAt), expectedDeliveryDate: item.expectedDelivery ? new Date(item.expectedDelivery) : undefined, owner: 'Unassigned' });
+const mapGR = (item: any): GoodsReceipt => ({ id: item.id, code: item.code, poCode: item.purchaseOrder?.code || item.purchaseOrderId, poId: item.purchaseOrderId, supplierName: item.purchaseOrder?.supplier?.name || '', warehouseId: item.warehouseId, warehouseName: item.warehouse?.name || '', status: fromGRStatus[item.status] || 'draft', receivedDate: new Date(item.receivedDate), items: (item.items || []).map((line: any) => ({ productName: line.product?.name || line.productId, orderedQty: 0, receivedQty: Number(line.receivedQuantity) })), receivedBy: 'Current user' });
 
 export const ProcurementProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>(MOCK_PURCHASE_ORDERS);
-  const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>(MOCK_GOODS_RECEIPTS);
-
-  // --- SUPPLIERS ---
-  const addSupplier = (sData: Omit<Supplier, 'id' | 'createdAt' | 'totalPurchases'>): Supplier => {
-    const newSupplier: Supplier = {
-      ...sData,
-      id: `sup-${Date.now()}`,
-      totalPurchases: 0,
-      createdAt: new Date(),
-    };
-    setSuppliers((prev) => [newSupplier, ...prev]);
-    return newSupplier;
-  };
-
-  const updateSupplier = (id: string, fields: Partial<Supplier>) => {
-    setSuppliers((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...fields } : s))
-    );
-  };
-
-  const deleteSupplier = (id: string) => {
-    setSuppliers((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  // --- PURCHASE ORDERS ---
-  const addPO = (poData: Omit<PurchaseOrder, 'id' | 'code' | 'poDate'>): PurchaseOrder => {
-    const codeNum = 126 + purchaseOrders.length;
-    const newPO: PurchaseOrder = {
-      ...poData,
-      id: `po-${Date.now()}`,
-      code: `PO-00${codeNum}`,
-      poDate: new Date(),
-    };
-    setPurchaseOrders((prev) => [newPO, ...prev]);
-    return newPO;
-  };
-
-  const updatePO = (id: string, fields: Partial<PurchaseOrder>) => {
-    setPurchaseOrders((prev) =>
-      prev.map((po) => (po.id === id ? { ...po, ...fields } : po))
-    );
-  };
-
-  const updatePOStatus = (id: string, status: POStatus) => {
-    setPurchaseOrders((prev) =>
-      prev.map((po) => (po.id === id ? { ...po, status } : po))
-    );
-  };
-
-  const deletePO = (id: string) => {
-    setPurchaseOrders((prev) => prev.filter((po) => po.id !== id));
-  };
-
-  // --- RECEIVE GOODS WORKFLOW ---
-  const receiveGoods = (
-    po: PurchaseOrder,
-    warehouseId: string,
-    warehouseName: string,
-    receivedItems: GoodsReceiptItem[],
-    recordStockMovement: (movement: any) => void
-  ): GoodsReceipt => {
-    const grCode = `GR-00${125 + goodsReceipts.length}`;
-
-    const newGR: GoodsReceipt = {
-      id: `gr-${Date.now()}`,
-      code: grCode,
-      poCode: po.code,
-      poId: po.id,
-      supplierName: po.supplierName,
-      warehouseId,
-      warehouseName,
-      status: 'received', // Initial status
-      receivedDate: new Date(),
-      items: receivedItems,
-      receivedBy: po.owner,
-      notes: `Received items against ${po.code} from ${po.supplierName}`,
-    };
-
-    setGoodsReceipts((prev) => [newGR, ...prev]);
-
-    // 1. Update PO Status to 'received'
-    updatePOStatus(po.id, 'received');
-
-    // 2. Trigger Inventory Stock Movement for each received item (+IN)
-    receivedItems.forEach((item) => {
-      const poItem = po.items.find((i) => i.productName.toLowerCase() === item.productName.toLowerCase());
-      const prodId = poItem?.productId || `prod-1`;
-
-      recordStockMovement({
-        productId: prodId,
-        productName: item.productName,
-        sku: 'SKU-RCV',
-        warehouseId,
-        warehouseName,
-        type: 'Purchase',
-        quantity: item.receivedQty, // Positive for IN
-        referenceCode: grCode,
-        notes: `Received via Goods Receipt ${grCode} against ${po.code}`,
-      });
-    });
-
-    return newGR;
-  };
-
-  return (
-    <ProcurementContext.Provider
-      value={{
-        suppliers,
-        purchaseOrders,
-        goodsReceipts,
-        addSupplier,
-        updateSupplier,
-        deleteSupplier,
-        addPO,
-        updatePO,
-        updatePOStatus,
-        deletePO,
-        receiveGoods,
-      }}
-    >
-      {children}
-    </ProcurementContext.Provider>
-  );
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]); const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]); const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null);
+  const run = async <T,>(operation: () => Promise<T>) => { try { setError(null); return await operation(); } catch (caught) { setError(caught instanceof Error ? caught.message : 'Procurement request failed'); return undefined; } };
+  const reload = async () => { setLoading(true); try { const [s, p, g] = await Promise.all([api.get<any[]>('/suppliers'), api.get<any[]>('/purchase-orders'), api.get<any[]>('/goods-receipts')]); setSuppliers(s.map(mapSupplier)); setPurchaseOrders(p.map(mapPO)); setGoodsReceipts(g.map(mapGR)); setError(null); } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to load procurement data'); } finally { setLoading(false); } };
+  useEffect(() => { void reload(); }, []);
+  const addSupplier = async (data: Omit<Supplier, 'id' | 'createdAt' | 'totalPurchases'>) => { const item = await run(() => api.post<any>('/suppliers', data)); if (!item) return; const result = mapSupplier(item); setSuppliers((current) => [result, ...current]); return result; };
+  const updateSupplier = async (id: string, data: Partial<Supplier>) => { await run(() => api.patch(`/suppliers/${id}`, data)); await reload(); };
+  const deleteSupplier = async (id: string) => { await run(() => api.delete(`/suppliers/${id}`)); setSuppliers((current) => current.filter((item) => item.id !== id)); };
+  const addPO = async (data: Omit<PurchaseOrder, 'id' | 'code' | 'poDate'>) => { const item = await run(() => api.post<any>('/purchase-orders', { supplierId: data.supplierId, warehouseId: '', status: poStatus[data.status], subtotal: data.subtotal, tax: data.tax, total: data.total, expectedDelivery: data.expectedDeliveryDate })); if (!item) return; for (const line of data.items.filter((item) => item.productId)) await run(() => api.post(`/purchase-orders/${item.id}/items`, { productId: line.productId, quantity: line.quantity, unitPrice: line.unitCost, lineTotal: line.total })); const result = mapPO({ ...item, items: data.items }); setPurchaseOrders((current) => [result, ...current]); return result; };
+  const updatePO = async (id: string, data: Partial<PurchaseOrder>) => { await run(() => api.patch(`/purchase-orders/${id}`, { supplierId: data.supplierId, status: data.status && poStatus[data.status], subtotal: data.subtotal, tax: data.tax, total: data.total, expectedDelivery: data.expectedDeliveryDate })); await reload(); };
+  const updatePOStatus = async (id: string, status: POStatus) => updatePO(id, { status });
+  const deletePO = async (id: string) => { await run(() => api.delete(`/purchase-orders/${id}`)); setPurchaseOrders((current) => current.filter((item) => item.id !== id)); };
+  const receiveGoods = async (po: PurchaseOrder, warehouseId: string, _warehouseName: string, receivedItems: GoodsReceiptItem[], _recordStockMovement: (movement: any) => void) => { const item = await run(() => api.post<any>(`/purchase-orders/${po.id}/receive`, { warehouseId, items: receivedItems.map((line: any) => ({ productId: line.productId, receivedQuantity: line.receivedQty })) })); await reload(); return item ? mapGR(item) : undefined; };
+  return <ProcurementContext.Provider value={{ suppliers, purchaseOrders, goodsReceipts, loading, error, reload, addSupplier, updateSupplier, deleteSupplier, addPO, updatePO, updatePOStatus, deletePO, receiveGoods }}>{children}</ProcurementContext.Provider>;
 };
 
-export const useProcurement = () => {
-  const context = useContext(ProcurementContext);
-  if (!context) {
-    throw new Error('useProcurement must be used within a ProcurementProvider');
-  }
-  return context;
-};
+export const useProcurement = () => { const context = useContext(ProcurementContext); if (!context) throw new Error('useProcurement must be used within a ProcurementProvider'); return context; };

@@ -157,7 +157,7 @@ export const CRMDashboard: React.FC = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justify-content: 'space-between',
+                  justifyContent: 'space-between',
                   padding: '0.625rem 0.875rem',
                   background: '#F1F5F9',
                   borderRadius: '6px',
@@ -196,7 +196,7 @@ export const CRMDashboard: React.FC = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justify-content: 'space-between',
+                  justifyContent: 'space-between',
                   padding: '0.75rem 1rem',
                   background: act.completed ? '#F8FAFC' : '#FFFFFF',
                   border: '1px solid #E2E8F0',

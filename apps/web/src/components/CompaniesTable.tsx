@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Company } from '../../types/crm';
+import { Company } from '../types/crm';
 
 interface CompaniesTableProps {
   companies?: Company[];
@@ -17,6 +17,7 @@ const MOCK_COMPANIES: Company[] = [
     website: 'www.acme.com',
     email: 'contact@acme.com',
     phone: '+91-8800000001',
+    owner: 'Admin',
     createdAt: new Date('2024-08-20'),
   },
   {
@@ -28,6 +29,7 @@ const MOCK_COMPANIES: Company[] = [
     website: 'www.globex.com',
     email: 'info@globex.com',
     phone: '+91-8800000002',
+    owner: 'Admin',
     createdAt: new Date('2024-08-25'),
   },
   {
@@ -39,6 +41,7 @@ const MOCK_COMPANIES: Company[] = [
     website: 'www.techcorp.com',
     email: 'hello@techcorp.com',
     phone: '+91-8800000003',
+    owner: 'Admin',
     createdAt: new Date('2024-08-18'),
   },
   {
@@ -50,6 +53,7 @@ const MOCK_COMPANIES: Company[] = [
     website: 'www.startupinnovations.com',
     email: 'team@startup.com',
     phone: '+91-8800000004',
+    owner: 'Admin',
     createdAt: new Date('2024-08-15'),
   },
 ];

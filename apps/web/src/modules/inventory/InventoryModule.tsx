@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import AppShell from '../../layouts/AppShell';
-import { InventoryProvider } from './inventoryContext';
 import { InventoryDashboard } from './dashboard/InventoryDashboard';
 import { ProductsPage } from './products/ProductsPage';
 import { WarehousesPage } from './warehouses/WarehousesPage';
 import { StockPage } from './stock/StockPage';
 import { MovementsPage } from './movements/MovementsPage';
+import { useInventory } from './inventoryContext';
 
 export type InventoryTab = 'dashboard' | 'products' | 'warehouses' | 'stock' | 'movements';
 
@@ -15,10 +15,11 @@ interface InventoryModuleProps {
 
 export const InventoryModule: React.FC<InventoryModuleProps> = ({ initialTab = 'dashboard' }) => {
   const [activeTab, setActiveTab] = useState<InventoryTab>(initialTab);
+  const { loading, error, reload } = useInventory();
 
   const tabs: { id: InventoryTab; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Inventory Dashboard', icon: '📊' },
-    { id: 'products', label: 'Products Catalog', icon: '📦' },
+    { id: 'products', label: 'Products Catalog', icon: '📱' },
     { id: 'warehouses', label: 'Warehouses', icon: '🏭' },
     { id: 'stock', label: 'Stock Matrix', icon: '📈' },
     { id: 'movements', label: 'Stock Movements', icon: '🔄' },
@@ -26,52 +27,55 @@ export const InventoryModule: React.FC<InventoryModuleProps> = ({ initialTab = '
 
   return (
     <AppShell>
-      <InventoryProvider>
-        {/* Module Sub-Header Navigation */}
-        <div
-          style={{
-            background: 'white',
-            borderBottom: '1px solid #E2E8F0',
-            padding: '0 1.5rem',
-            display: 'flex',
-            gap: '1rem',
-            alignItems: 'center',
-          }}
-        >
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.875rem 0.5rem',
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === t.id ? '3px solid #3B82F6' : '3px solid transparent',
-                color: activeTab === t.id ? '#2563EB' : '#64748B',
-                fontWeight: activeTab === t.id ? 700 : 500,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span>{t.icon}</span>
-              <span>{t.label}</span>
+      <div className="module-container">
+        {loading && (
+          <div className="module-banner info">
+            <span className="banner-spinner"></span>
+            <span>Loading inventory records...</span>
+          </div>
+        )}
+        {error && (
+          <div className="module-banner error">
+            <span>{error}</span>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => void reload()}>
+              Retry
             </button>
-          ))}
+          </div>
+        )}
+
+        {/* Module Sub-Header Navigation */}
+        <div className="module-subnav">
+          <div className="module-subnav-left">
+            <span className="module-brand-icon">📦</span>
+            <div className="module-title-group">
+              <h2 className="module-title">Inventory Operations</h2>
+              <span className="module-subtitle">Manage SKUs, warehouses, stock levels & movement logs</span>
+            </div>
+          </div>
+
+          <div className="module-tabs-list">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`module-tab-btn ${activeTab === t.id ? 'active' : ''}`}
+              >
+                <span className="tab-icon">{t.icon}</span>
+                <span className="tab-label">{t.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tab Views */}
-        <div>
+        <div className="module-tab-content">
           {activeTab === 'dashboard' && <InventoryDashboard />}
           {activeTab === 'products' && <ProductsPage />}
           {activeTab === 'warehouses' && <WarehousesPage />}
           {activeTab === 'stock' && <StockPage />}
           {activeTab === 'movements' && <MovementsPage />}
         </div>
-      </InventoryProvider>
+      </div>
     </AppShell>
   );
 };

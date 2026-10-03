@@ -1,60 +1,55 @@
 import React, { useState } from 'react';
-
-interface Workspace {
-  id: string;
-  name: string;
-  icon: string;
-}
+import { useAuth } from '../auth/AuthContext';
 
 export const WorkspaceSwitcher: React.FC = () => {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>({
-    id: '1',
-    name: 'Main Workspace',
-    icon: '🏢',
-  });
 
-  const workspaces: Workspace[] = [
-    { id: '1', name: 'Main Workspace', icon: '🏢' },
-    { id: '2', name: 'Development', icon: '🔧' },
-    { id: '3', name: 'Testing', icon: '🧪' },
+  const orgName = user?.organization?.name || 'Main Workspace';
+
+  const workspaces = [
+    { id: '1', name: orgName, icon: '🏢', type: 'Primary Organization' },
+    { id: '2', name: 'Sandbox / Dev Branch', icon: '🧪', type: 'Test Environment' },
   ];
 
-  const handleSwitch = (workspace: Workspace) => {
-    setCurrentWorkspace(workspace);
-    setIsOpen(false);
-  };
+  const [activeWorkspace, setActiveWorkspace] = useState(workspaces[0]);
 
   return (
     <div className="workspace-switcher">
       <button
         className="workspace-btn"
         onClick={() => setIsOpen(!isOpen)}
+        title="Switch Workspace"
       >
-        <span className="workspace-icon">{currentWorkspace.icon}</span>
-        <span className="workspace-name">{currentWorkspace.name}</span>
-        <span className="dropdown-icon">▼</span>
+        <span className="workspace-status-dot"></span>
+        <span className="workspace-name">{activeWorkspace.name}</span>
+        <span className="dropdown-arrow">▾</span>
       </button>
 
       {isOpen && (
-        <div className="workspace-menu">
-          {workspaces.map((ws) => (
-            <button
-              key={ws.id}
-              className={`workspace-item ${
-                ws.id === currentWorkspace.id ? 'active' : ''
-              }`}
-              onClick={() => handleSwitch(ws)}
-            >
-              <span className="icon">{ws.icon}</span>
-              <span className="name">{ws.name}</span>
-            </button>
-          ))}
-          <hr />
-          <button className="workspace-item create-workspace">
-            + Create Workspace
-          </button>
-        </div>
+        <>
+          <div className="dropdown-overlay" onClick={() => setIsOpen(false)} />
+          <div className="workspace-menu">
+            <div className="workspace-menu-header">Active Organizations</div>
+            {workspaces.map((ws) => (
+              <button
+                key={ws.id}
+                className={`workspace-item ${ws.id === activeWorkspace.id ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveWorkspace(ws);
+                  setIsOpen(false);
+                }}
+              >
+                <span className="workspace-item-icon">{ws.icon}</span>
+                <div className="workspace-item-info">
+                  <span className="workspace-item-name">{ws.name}</span>
+                  <span className="workspace-item-type">{ws.type}</span>
+                </div>
+                {ws.id === activeWorkspace.id && <span className="workspace-check">✓</span>}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

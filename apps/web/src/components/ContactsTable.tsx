@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Contact } from '../../types/crm';
+import { Contact } from '../types/crm';
 
 interface ContactsTableProps {
   contacts?: Contact[];
@@ -16,6 +16,7 @@ const MOCK_CONTACTS: Contact[] = [
     phone: '+91-9876543210',
     company: 'Acme Corp',
     title: 'Manager',
+    owner: 'Admin',
     createdAt: new Date('2024-08-20'),
   },
   {
@@ -26,6 +27,7 @@ const MOCK_CONTACTS: Contact[] = [
     phone: '+91-9876543211',
     company: 'Globex Industries',
     title: 'Director',
+    owner: 'Admin',
     createdAt: new Date('2024-08-25'),
   },
   {
@@ -36,6 +38,7 @@ const MOCK_CONTACTS: Contact[] = [
     phone: '+91-9876543212',
     company: 'TechCorp Solutions',
     title: 'VP Sales',
+    owner: 'Admin',
     createdAt: new Date('2024-08-18'),
   },
   {
@@ -46,6 +49,7 @@ const MOCK_CONTACTS: Contact[] = [
     phone: '+91-9876543213',
     company: 'StartUp Innovations',
     title: 'Founder',
+    owner: 'Admin',
     createdAt: new Date('2024-08-15'),
   },
 ];

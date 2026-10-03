@@ -26,8 +26,16 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = auth.getToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  const response = await fetch(`${API_URL}${path}`, { ...init, headers });
-  if (response.status === 401) auth.clear();
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, { ...init, headers });
+  } catch {
+    throw new ApiError(`Unable to reach the ERP API at ${API_URL}. Start the backend and verify PostgreSQL is configured.`, 0);
+  }
+  if (response.status === 401) {
+    auth.clear();
+    window.dispatchEvent(new Event('erp:unauthorized'));
+  }
   if (!response.ok) {
     const payload = await response.json().catch(() => undefined);
     throw new ApiError(payload?.error?.message || 'Request failed', response.status, payload?.error?.details);
@@ -44,6 +52,11 @@ export const api = {
   delete: (path: string) => request<void>(path, { method: 'DELETE' }),
   login: async (email: string, password: string) => {
     const result = await request<{ token: string; user: unknown }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    auth.setToken(result.token);
+    return result;
+  },
+  signup: async (body: { organizationName: string; organizationEmail: string; name: string; email: string; password: string }) => {
+    const result = await request<{ token: string; user: unknown }>('/auth/signup', { method: 'POST', body: JSON.stringify(body) });
     auth.setToken(result.token);
     return result;
   },

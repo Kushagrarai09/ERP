@@ -42,6 +42,8 @@ This will:
 2. Run `npm run db:seed` → Loads realistic demo data
 3. Setup is complete! ✅
 
+The current native PostgreSQL service in this workspace uses port `5000`, while the ERP API uses port `5001`. Make sure `backend/.env` contains the correct PostgreSQL password.
+
 ---
 
 ## 🔍 Verify Everything
@@ -116,7 +118,41 @@ After `npm run db:setup` completes:
 
 ---
 
-## 🎯 Next: Phase 3 (Backend APIs)
+## 🚀 Start the Backend API
+
+```powershell
+cd backend
+npm run dev
+```
+
+The API will run at `http://localhost:5001`.
+
+## 🌐 Start the Frontend
+
+Open a second PowerShell window:
+
+```powershell
+cd apps/web
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` and sign in with a seeded user, for example `admin@techvision.com` and the password configured by the seed script.
+
+## 🧪 Run Tests and Builds
+
+```powershell
+cd backend
+npm test
+npm run build
+
+cd ..\apps\web
+npm run build
+```
+
+The backend smoke tests do not require a database. Database-backed workflow tests require successful `npm run db:setup` first.
+
+## 🎯 Next: Phase 5 (Verification and Hardening)
 
 Once database is ready, next phase will implement:
 - REST API endpoints for each module

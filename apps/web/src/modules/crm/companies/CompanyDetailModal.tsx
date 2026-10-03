@@ -201,7 +201,7 @@ export const CompanyDetailModal: React.FC<CompanyDetailModalProps> = ({
                     key={cnt.id}
                     style={{
                       display: 'flex',
-                      justify: 'space-between',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
                       padding: '0.75rem 1rem',
                       border: '1px solid #E2E8F0',
@@ -239,7 +239,7 @@ export const CompanyDetailModal: React.FC<CompanyDetailModalProps> = ({
                     key={deal.id}
                     style={{
                       display: 'flex',
-                      justify: 'space-between',
+                      justifyContent: 'space-between',
                       alignItems: 'center',
                       padding: '0.75rem 1rem',
                       border: '1px solid #E2E8F0',
